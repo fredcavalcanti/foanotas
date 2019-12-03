@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="Site pra ver notas da Foa de forma mais Rápida">
+    <meta name="author" content="Frederico Sampaio">
+    <meta name="keywords" content="Notas Unifoa Foa Rapido">
+    <title>Notas</title>
+    <link href="css/font-face.css" rel="stylesheet" media="all">
+    <link href="vendor/font-awesome-4.7/css/font-awesome.min.css" rel="stylesheet" media="all">
+    <link href="vendor/font-awesome-5/css/fontawesome-all.min.css" rel="stylesheet" media="all">
+    <link href="vendor/mdi-font/css/material-design-iconic-font.min.css" rel="stylesheet" media="all">
+    <link href="vendor/bootstrap-4.1/bootstrap.min.css" rel="stylesheet" media="all">
+    <link href="vendor/animsition/animsition.min.css" rel="stylesheet" media="all">
+    <link href="vendor/bootstrap-progressbar/bootstrap-progressbar-3.3.4.min.css" rel="stylesheet" media="all">
+    <link href="vendor/wow/animate.css" rel="stylesheet" media="all">
+    <link href="vendor/css-hamburgers/hamburgers.min.css" rel="stylesheet" media="all">
+    <link href="vendor/slick/slick.css" rel="stylesheet" media="all">
+    <link href="vendor/select2/select2.min.css" rel="stylesheet" media="all">
+    <link href="vendor/perfect-scrollbar/perfect-scrollbar.css" rel="stylesheet" media="all">
+    <link href="css/theme.css" rel="stylesheet" media="all">
+</head>
+
+<body class="animsition">
+    <div id="formLogin" class="page-wrapper">
+    	<div id="circle"></div>
+        <div class="page-content--bge5">
+            <div class="container">
+                <div class="login-wrap">
+                    <div  style="margin-top: 15% !important;" class="login-content">
+                        <div class="login-form">
+                            <form>
+                                <div class="form-group">
+                                    <label>Matricula</label>
+                                    <input class="au-input au-input--full" type="text" name="matricula" placeholder="Sua Matricula">
+                                </div>
+                                <div class="form-group">
+                                    <label>Senha</label>
+                                    <input class="au-input au-input--full" type="password" name="password" placeholder="Password">
+                                </div>
+                                <button class="au-btn au-btn--block au-btn--green m-b-20" type="submit">Entrar</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="logged" hidden>
+	        <div>	
+	            <div class="">
+	                <div class="section__content section__content--p30">
+	                    <div class="container-fluid">
+	                        <div id="painelGeral" class="row m-t-25">
+	                        </div>
+	                        <div class="row">
+	                            <div class="col-md-12">
+	                                <div class="copyright">
+	                                    <p>Copyright © 2018 Colorlib. All rights reserved. Template by <a href="https://colorlib.com">Colorlib</a>.</p>
+	                                </div>
+	                            </div>
+	                        </div>
+	                    </div>
+	                </div>
+	            </div>
+	        </div>
+	    </div>
+
+    <!-- Jquery JS-->
+    <script src="vendor/jquery-3.2.1.min.js"></script>
+    <!-- Bootstrap JS-->
+    <script src="vendor/bootstrap-4.1/popper.min.js"></script>
+    <script src="vendor/bootstrap-4.1/bootstrap.min.js"></script>
+    <!-- Vendor JS       -->
+    <script src="vendor/animsition/animsition.min.js"></script>
+    <script src="vendor/counter-up/jquery.waypoints.min.js"></script>
+    <script src="vendor/counter-up/jquery.counterup.min.js">
+    </script>
+    <script src="vendor/circle-progress/circle-progress.min.js"></script>
+    <script src="vendor/perfect-scrollbar/perfect-scrollbar.js"></script>
+    </script>
+
+    <!-- Main JS-->
+    <script src="js/main.js"></script>
+	<script type="text/javascript">
+		const baseURL = `https://notasfoa.herokuapp.com`;
+        const painel = document.getElementById('painelGeral');
+
+        function getRndInteger(min, max) {
+          return Math.floor(Math.random() * (max - min + 1) ) + min;
+        }
+		
+		(document.querySelector('form')).addEventListener('submit' , e =>{
+			e.preventDefault();
+			let matricula = document.querySelector('[name="matricula"]').value;
+			let senha = document.querySelector('[name="password"]').value;
+			iniciar(matricula,senha);
+		})
+
+		function iniciar(matricula,senha){
+			if(matricula,senha){
+				document.querySelector('button[type="submit"]').innerText = 'Carregando...';
+				document.querySelector('button[type="submit"]').setAttribute('disabled','');
+				document.querySelector('[name="matricula"]').setAttribute('disabled','');
+				document.querySelector('[name="password"]').setAttribute('disabled','');
+			fetch(`${baseURL}/data`,
+	        {
+	            headers: {
+	              'Accept': 'application/json',
+	              'Content-Type': 'application/json'
+	            },
+	            method: "POST",
+	            body: JSON.stringify({usuario:matricula,senha:senha})
+	        })
+	        .then(res => res.status == 200 ? res.json() : "")
+	        .then(response => {
+	        	document.querySelector('#formLogin').setAttribute('hidden','');
+	        	document.querySelector('#logged').removeAttribute('hidden');
+	        	document.querySelector('button[type="submit"]').innerText = 'Entrar';
+				document.querySelector('button[type="submit"]').removeAttribute('disabled');
+				document.querySelector('[name="matricula"]').value="";
+				document.querySelector('[name="password"]').value="";
+	            let materias = Object.keys(response);
+	            let notas = Object.values(response);
+	            if(!materias.length > 0 && !notas.length > 0){
+	            	alert('Error, tente novamente.');
+	            	window.location.reload();
+	            }
+	            materias.forEach( (nome,index) => {
+	                let todasNotas = notas[index];
+	                listaNotas = "";
+	                msg = '';
+	                var somaNotas = 0;
+	                var semNota = 0;
+	                todasNotas.map( (a,indexNota) =>{
+	                    if(a == "Não divulgada"){
+	                        msg = 'Você possui nota ainda não divulgada';
+	                        listaNotas += `Nota ${indexNota+1}: Nota não divulgada <br>`;
+	                        cor="#efff00";
+	                        semNota++;
+	                    }else{
+	                        let nota = a.replace(',','.');
+	                        somaNotas += parseFloat(nota)*10000;
+	                        listaNotas += `Nota ${indexNota+1}: ${parseFloat(nota)} <br>`;
+	                    }
+	                })
+	                let media = ((somaNotas / (4-semNota))/10000).toFixed(2);
+	                if(!msg && media < 7){
+	                    msg = "Que pena, você está de Prova Final nessa Matéria!";
+	                    cor= "#ff9595";
+	                }else if(!msg && media >= 7){
+	                    msg= "Parabéns Você foi aprovado!";
+	                    cor="#12ff12"
+	                }
+	                let styled = getRndInteger(1,4);
+	                painel.innerHTML += `
+	                <div class="col-sm-6 col-lg-3">
+	                    <div class="overview-item overview-item--c${styled}">
+	                        <div class="overview__inner">
+	                            <div class="overview-box clearfix">
+	                                <span style="color:white">${nome}</span><br>
+	                                <div class="text">
+	                                    <span style="color:white">${listaNotas}</span><br>
+	                                    <h4 style="color:white" >Sua Média: ${media}</h4><br>
+	                                    <span style="color:${cor}">${msg}</span>
+	                                </div>
+	                            </div>
+	                        </div>
+	                    </div>
+	                </div>`;
+	            })
+	        })
+	        .catch((res) =>{
+	        	alert('Desculpe, não conseguimos carregar seus dados.')
+	        	document.querySelector('button[type="submit"]').innerText = 'Entrar';
+				document.querySelector('button[type="submit"]').removeAttribute('disabled');
+				document.querySelector('[name="matricula"]').removeAttribute('disabled');
+				document.querySelector('[name="password"]').removeAttribute('disabled');
+				document.querySelector('[name="matricula"]').value="";
+				document.querySelector('[name="password"]').value="";
+
+	        })
+			}else{
+				alert('Preencha todos os campos por favor!');
+			}
+		}
+		
+	</script>
+</body>
+
+</html>
+<!-- end document-->
