@@ -16,4 +16,4 @@ Template By: ColorLib<br>
 
 ![CoolAdmin admin dashboard template preview](https://colorlib.com/wp/wp-content/uploads/sites/2/Dashboard-v2.jpg)
 
-### Demo Site: [[Here]](https://colorlib.com/polygon/cooladmin/index.html)
+### Demo Template: [[Here]](https://colorlib.com/polygon/cooladmin/index.html)
