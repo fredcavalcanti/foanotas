@@ -56,9 +56,9 @@
 	                        <div id="painelGeral" class="row m-t-25">
 	                        </div>
 	                        <div class="row">
-	                            <div class="col-md-12">
+	                            <div class="col">
 	                                <div class="copyright">
-	                                    <p>Copyright © 2018 Colorlib. All rights reserved. Template by <a href="https://colorlib.com">Colorlib</a>.</p>
+	                                    <p>Copyright © 2018 Colorlib. All rights reserved. Template by <a href="https://colorlib.com">Colorlib</a>. Design by <a href="https://github.com/caiodomingues">Caio Domingues</a>.</p>
 	                                </div>
 	                            </div>
 	                        </div>
@@ -138,7 +138,7 @@
 	                    if(a == "Não divulgada"){
 	                        msg = 'Você possui nota ainda não divulgada';
 	                        listaNotas += `Nota ${indexNota+1}: Nota não divulgada <br>`;
-	                        cor="#efff00";
+	                        cor="#ffb100";
 	                        semNota++;
 	                    }else{
 	                        let nota = a.replace(',','.');
@@ -148,26 +148,27 @@
 	                })
 	                let media = ((somaNotas / (4-semNota))/10000).toFixed(2);
 	                if(!msg && media < 7){
-	                    msg = "Que pena, você está de Prova Final nessa Matéria!";
-	                    cor= "#ff9595";
+	                    msg = `Que pena, você está de Prova Final nessa Matéria! &#x1F622`;
+						cor= "#f30000";
 	                }else if(!msg && media >= 7){
 	                    msg= "Parabéns Você foi aprovado!";
-	                    cor="#12ff12"
+						cor="#56aa4b";
 	                }
-	                let styled = getRndInteger(1,4);
-	                painel.innerHTML += `
-	                <div class="col-sm-6 col-lg-3">
-	                    <div class="overview-item overview-item--c${styled}">
-	                        <div class="overview__inner">
-	                            <div class="overview-box clearfix">
-	                                <span style="color:white">${nome}</span><br>
-	                                <div class="text">
-	                                    <span style="color:white">${listaNotas}</span><br>
-	                                    <h4 style="color:white" >Sua Média: ${media}</h4><br>
-	                                    <span style="color:${cor}">${msg}</span>
-	                                </div>
-	                            </div>
-	                        </div>
+					painel.innerHTML += `
+	                <div class="col-md-3">
+						<div class="card border-0 shadow" style="height: 387px;">
+							<div class="card-header border-bottom bg-light" style="border-top: 5px solid ${cor}">
+								<h4 class="text-center p-3">${nome}</h4>
+							</div>
+							<div class="card-body">
+								<div class="text-dark">
+									<p>${listaNotas}</p>
+									<h4>Sua Média: ${media}</h4>
+								</div>
+							</div>
+							<div style="background-color: ${cor};" class="card-footer text-center border-0">
+								<p class="text-white font-weight-bold">${msg}</p>
+							</div>
 	                    </div>
 	                </div>`;
 	            })
