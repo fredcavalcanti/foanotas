@@ -148,7 +148,7 @@
 	                })
 	                let media = ((somaNotas / (notas[0].length-semNota))/10000).toFixed(2);
 	                if(!msg && media < 7){
-	                    msg = `Que pena, você está de Prova Final nessa Matéria! &#x1F622 e precisa de ${10-media} para passar!`;
+	                    msg = `Que pena, você está de Prova Final nessa Matéria! &#x1F622 e precisa de ${(10-media).toFixed(2)} para passar!`;
 						cor= "#f30000";
 	                }else if(!msg && media >= 7){
 	                    msg= "Parabéns Você foi aprovado!";
