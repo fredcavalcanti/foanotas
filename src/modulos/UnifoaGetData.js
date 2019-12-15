@@ -164,6 +164,3 @@ let start = (login,senha) =>{
 }
 
 module.exports = { start }
-
-// start('201700557','29011997')
-// .then( a => console.log(a))
