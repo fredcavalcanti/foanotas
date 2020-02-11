@@ -86,6 +86,7 @@
     <script src="js/main.js"></script>
 	<script type="text/javascript">
 		const baseURL = `https://notasfoa.herokuapp.com`;
+		//const baseURL = `http://localhost:3000`;
         const painel = document.getElementById('painelGeral');
 
         function getRndInteger(min, max) {
@@ -115,53 +116,74 @@
 	            body: JSON.stringify({usuario:matricula,senha:senha})
 	        })
 	        .then(res => res.status == 200 ? res.json() : "")
-	        .then(response => {
+	        .then(responses => {
 	        	document.querySelector('#formLogin').setAttribute('hidden','');
 	        	document.querySelector('#logged').removeAttribute('hidden');
 	        	document.querySelector('button[type="submit"]').innerText = 'Entrar';
 				document.querySelector('button[type="submit"]').removeAttribute('disabled');
 				document.querySelector('[name="matricula"]').value="";
 				document.querySelector('[name="password"]').value="";
+				let response = responses[1];
+				let responseDays = responses[0];
+				let aulasHoje = responseDays[new Date().getDay()];
 	            let materias = Object.keys(response);
-	            let notas = Object.values(response);
+	            let valores = Object.values(response);
+	            let notas = valores.map( a => a.notas);
+	            let faltas = valores.map( a => a.faltas);
 	            if(!materias.length > 0 && !notas.length > 0){
 	            	alert('Error, tente novamente.');
 	            	window.location.reload();
 	            }
 	            materias.forEach( (nome,index) => {
+	            	let nomeVar = nome;
+	            	aulasHoje.forEach( a => nome.search(a) != -1 ? nomeVar = `${nome}  <p style="color:#f30000">(Aula Hoje!)</p>` : "");
+	            	let appendInicio = aulasHoje.map( a => nome.search(a) != -1 ? true : "").filter(a=>a);
 	                let todasNotas = notas[index];
+	                let valoresFaltas = faltas[index];
+	                let numSuasFaltas = parseInt((valoresFaltas.split('/')[0]).replace('faltas','').trim());
+	                let numFaltasMax = parseInt((valoresFaltas.split('/')[1]).replace('faltas','').trim());
+	                let porcentagemFaltas = (numSuasFaltas*100)/numFaltasMax;
+	                porcentagemFaltas > 60 ? corFaltas = '#f30000' : corFaltas = '#56aa4b';
 	                listaNotas = "";
 	                msg = '';
 	                var somaNotas = 0;
 	                var semNota = 0;
-	                todasNotas.map( (a,indexNota) =>{
-	                    if(a == "Não divulgada"){
-	                        msg = 'Você possui nota ainda não divulgada';
-	                        listaNotas += `Nota ${indexNota+1}: Nota não divulgada <br>`;
-	                        cor="#ffb100";
-	                        semNota++;
-	                    }else{
-	                        let nota = a.replace(',','.');
-	                        somaNotas += parseFloat(nota)*10000;
-	                        listaNotas += `Nota ${indexNota+1}: ${parseFloat(nota)} <br>`;
-	                    }
-	                })
-	                let media = ((somaNotas / (notas[0].length-semNota))/10000).toFixed(2);
-	                if(!msg && media < 7){
-	                    msg = `Que pena, você está de Prova Final nessa Matéria! &#x1F622 e precisa de ${(10-media).toFixed(2)} para passar!`;
-						cor= "#f30000";
-	                }else if(!msg && media >= 7){
-	                    msg= "Parabéns Você foi aprovado!";
-						cor="#56aa4b";
+	                if(todasNotas.length > 0){
+		                todasNotas.map( (a,indexNota) =>{
+		                    if(a == "Não divulgada"){
+		                        msg = 'Você possui nota ainda não divulgada';
+		                        listaNotas += `Nota ${indexNota+1}: Nota não divulgada <br>`;
+		                        cor="#ffb100";
+		                        semNota++;
+		                    }else{
+		                        let nota = a.replace(',','.');
+		                        somaNotas += parseFloat(nota)*10000;
+		                        listaNotas += `Nota ${indexNota+1}: ${parseFloat(nota)} <br>`;
+		                    }
+		                })
+		                let media = ((somaNotas / (notas[0].length-semNota))/10000).toFixed(2);
+		                if(!msg && media < 7){
+		                    msg = `Que pena, você está de Prova Final nessa Matéria! &#x1F622 e precisa de ${(10-media).toFixed(2)} para passar!`;
+							cor= "#f30000";
+		                }else if(!msg && media >= 7){
+		                    msg= "Parabéns Você foi aprovado!";
+							cor="#56aa4b";
 	                }
-					painel.innerHTML += `
+	            }else{
+	            	msg = 'Nenhuma nota encontrada';
+	            	cor="#597eeb";
+	            	media = 'Não é possivel calcular a média.'
+	            }
+	            if(appendInicio.length < 1){
+	            	painel.innerHTML += `
 	                <div class="col-md-3">
 						<div class="card border-0 shadow" style="height: 387px;">
 							<div class="card-header border-bottom bg-light" style="border-top: 5px solid ${cor}">
-								<h4 class="text-center p-3">${nome}</h4>
+								<h4 class="text-center p-3">${nomeVar}</h4>
 							</div>
 							<div class="card-body">
 								<div class="text-dark">
+									<p style="margin-bottom: 10%;text-align:center;font-weight:bold;color:${corFaltas}">${valoresFaltas}</p>
 									<p>${listaNotas}</p>
 									<h4>Sua Média: ${media}</h4>
 								</div>
@@ -171,9 +193,30 @@
 							</div>
 	                    </div>
 	                </div>`;
+	            }else{
+	            	painel.insertAdjacentHTML("afterbegin",`
+	                <div class="col-md-3">
+						<div class="card border-0 shadow" style="height: 387px;">
+							<div class="card-header border-bottom bg-light" style="border-top: 5px solid ${cor}">
+								<h4 class="text-center p-3">${nomeVar}</h4>
+							</div>
+							<div class="card-body">
+								<div class="text-dark">
+									<p style="margin-bottom: 10%;text-align:center;font-weight:bold;color:${corFaltas}">${valoresFaltas}</p>
+									<p>${listaNotas}</p>
+									<h4>Sua Média: ${media}</h4>
+								</div>
+							</div>
+							<div style="background-color: ${cor};" class="card-footer text-center border-0">
+								<p class="text-white font-weight-bold">${msg}</p>
+							</div>
+	                    </div>
+	                </div>`);
+	            }
 	            })
 	        })
-	        .catch((res) =>{
+	        .catch((err) =>{
+	        	console.log(err);
 	        	alert('Desculpe, não conseguimos carregar seus dados.')
 	        	document.querySelector('button[type="submit"]').innerText = 'Entrar';
 				document.querySelector('button[type="submit"]').removeAttribute('disabled');
@@ -186,7 +229,17 @@
 			}else{
 				alert('Preencha todos os campos por favor!');
 			}
-		}
+		};
+
+
+		// let changeCard = async elem => {
+		// 	let cardHeader = elem.querySelector('div.card-header');
+		// 	let cardBody = elem.querySelector('div.card-body');
+		// 	let cardFooter = elem.querySelector('div.card-footer');
+		// 	cardHeader.setAttribute('hidden','');
+		// 	cardBody.setAttribute('hidden','');
+		// 	cardBody.setAttribute('hidden','');
+		// } 
 		
 	</script>
 </body>
