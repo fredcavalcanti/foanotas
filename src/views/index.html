@@ -136,7 +136,7 @@
 	            }
 	            materias.forEach( (nome,index) => {
 	            	let nomeVar = nome;
-	            	aulasHoje.forEach( a => nome.search(a) != -1 ? nomeVar = `<p class="text-light bg-dark text-center"><small class="font-weight-bold text-uppercase">(Aula Hoje!)</small></p> <h4 class="text-center p-3">${nome}</h4>` : "");
+	            	aulasHoje.forEach( a => nome.search(a) != -1 ? nomeVar = `<p class="text-light bg-dark text-center"><small class="font-weight-bold text-uppercase">(Aula Hoje!)</small></p> <h4 class="text-center p-3">${nome}</h4>` : `<h4 class="text-center p-3">${nome}</h4>`;
 	            	let appendInicio = aulasHoje.map( a => nome.search(a) != -1 ? true : "").filter(a=>a);
 	                let todasNotas = notas[index];
 	                let valoresFaltas = faltas[index];
