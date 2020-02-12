@@ -136,7 +136,7 @@
 	            }
 	            materias.forEach( (nome,index) => {
 	            	let nomeVar = nome;
-	            	aulasHoje.forEach( a => nome.search(a) != -1 ? nomeVar = `<p class="text-light bg-dark text-center"><small class="font-weight-bold text-uppercase">(Aula Hoje!)</small></p> ${nome}` : "");
+	            	aulasHoje.forEach( a => nome.search(a) != -1 ? nomeVar = `<p class="text-light bg-dark text-center"><small class="font-weight-bold text-uppercase">(Aula Hoje!)</small></p> <h4 class="text-center p-3">${nome}</h4>` : "");
 	            	let appendInicio = aulasHoje.map( a => nome.search(a) != -1 ? true : "").filter(a=>a);
 	                let todasNotas = notas[index];
 	                let valoresFaltas = faltas[index];
@@ -179,7 +179,7 @@
 	                <div class="col-md-3">
 						<div class="card border-0 shadow" style="height: 387px;">
 							<div class="card-header border-bottom bg-light m-0 p-0" style="border-top: 5px solid ${cor}">
-								<h4 class="text-center p-3">${nomeVar}</h4>
+								${nomeVar}
 							</div>
 							<div class="card-body">
 								<div class="text-dark">
@@ -198,7 +198,7 @@
 	                <div class="col-md-3">
 						<div class="card border-0 shadow" style="height: 387px;">
 							<div class="card-header border-bottom bg-light m-0 p-0" style="border-top: 5px solid ${cor}">
-								<h4 class="text-center p-3">${nomeVar}</h4>
+								${nomeVar}
 							</div>
 							<div class="card-body">
 								<div class="text-dark">
