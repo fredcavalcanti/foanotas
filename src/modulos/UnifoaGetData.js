@@ -1,154 +1,21 @@
 var request = require("request").defaults({ jar: true });
+const btoa = require('btoa');
 const cheerio = require('cheerio');
 
-let getSession = (cookieJar) => {
-	return new Promise( (resolve,reject) =>{
-		request({
-			method:'GET',
-			headers:{
-				"accept":"text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3",
-				"accept-language":"pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7",
-				"cache-control":"max-age=0",
-				"sec-fetch-mode":"navigate",
-				"sec-fetch-site":"same-origin",
-				"sec-fetch-user":"?1",
-				"upgrade-insecure-requests":"1"
-			},
-			jar:cookieJar,
-			uri:'https://portal.unifoa.edu.br/PortalSagres/Acesso.aspx',
-			rejectUnauthorized: false
-		}, (error, response, body) => {
-			if(error) reject(error);
-			let $ = cheerio.load(body);
-			let viewStateGenerator = $('#__VIEWSTATEGENERATOR').map( (i,elem) =>elem.attribs.value)[0];
-			let viewState = $('#__VIEWSTATE').map( (i,elem) => elem.attribs.value)[0];
-			let eventValidation = $('#__EVENTVALIDATION').map( (i,elem) => elem.attribs.value)[0];
-			resolve({ viewStateGenerator:encodeURIComponent(viewStateGenerator) , viewState:encodeURIComponent(viewState) , eventValidation:encodeURIComponent(eventValidation) })
-		})
-	});
-}
-
-
-let loginPage = (attribs,cookieJar) => {
-	return new Promise( (resolve,reject) =>{
-		request({
-			method:'POST',
-			headers:{
-				"accept":"text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3",
-				"accept-language":"pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7",
-				"Cache-Control": "no-cache",
-				"Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
-				"Sec-Fetch-Mode": "cors",
-				"Sec-Fetch-Site": "same-origin",
-				"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.108 Safari/537.36",
-				"X-MicrosoftAjax": "Delta=true",
-				"X-Requested-With": "XMLHttpRequest"
-			},
-			jar:cookieJar,
-			uri:'https://portal.unifoa.edu.br/PortalSagres/Acesso.aspx',
-			rejectUnauthorized: false,
-			body:`__EVENTTARGET=&__EVENTARGUMENT=&__VIEWSTATE=${attribs.viewState}&__VIEWSTATEGENERATOR=${attribs.viewStateGenerator}&__EVENTVALIDATION=${attribs.eventValidation}&ctl00%24PageContent%24LoginPanel%24UserName=${attribs.login}&ctl00%24PageContent%24LoginPanel%24Password=${attribs.senha}&ctl00%24PageContent%24LoginPanel%24LoginButton=Entrar`
-		}, (error, response, body) => error ? reject(error) : resolve(response));
-	});
-}
-
-
-let getHomePage = (cookieJar) => {
-	return new Promise( (resolve,reject) =>{
-		request({
-			headers:{
-				"Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3",
-				"Accept-Language": "en-US,en;q=0.9",
-				"Cache-Control": "max-age=0",
-				"Host": "portal.unifoa.edu.br",
-				"Referer": "https://portal.unifoa.edu.br/PortalSagres/Acesso.aspx",
-				"Sec-Fetch-Mode": "navigate",
-				"Sec-Fetch-Site": "same-origin",
-				"Sec-Fetch-User": "?1",
-				"Upgrade-Insecure-Requests": "1",
-				"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.108 Safari/537.36"
-			},
-			jar:cookieJar,
-			strictSSL: false,
-			uri:'https://portal.unifoa.edu.br/PortalSagres/Login.ashx',
-		}, (error, response, body) => error ? reject(error) : resolve(response));
-	});
-}
-
-
-let getBoletim = (cookieJar) => {
+let loginApi = (cookieJar,b64) => {
 	return new Promise( (resolve,reject) =>{
 		try{
 			request({
 				headers:{
-					"Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3",
+					"Accept": "application/json, text/javascript, */*; q=0.01",
+					"Authorization":`Basic ${b64}`,
 					"Accept-Language": "en-US,en;q=0.9",
-					"Cache-Control": "max-age=0",
-					"Host": "portal.unifoa.edu.br",
-					"Referer": "https://portal.unifoa.edu.br/PortalSagres/Acesso.aspx",
-					"Sec-Fetch-Mode": "navigate",
-					"Sec-Fetch-Site": "same-origin",
-					"Sec-Fetch-User": "?1",
-					"Upgrade-Insecure-Requests": "1",
 					"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.108 Safari/537.36"
 				},
 				jar:cookieJar,
 				strictSSL: false,
-				uri:'https://portal.unifoa.edu.br/PortalSagres/Modules/Diario/Aluno/Relatorio/Boletim.aspx?op=notas',
-			}, (error, response, body) => {
-				if(error) reject(error);
-				let objeto = {};
-				let $ = cheerio.load(body);
-				let suasFaltas = $('[id*="_lblValorTotalFaltas"]').map( (index,elemento) => elemento.children[0].data).get();
-				let faltasTotais = $('[id*="_lblValorLimiteFaltas"]').map( (index,elemento) => elemento.children[0].data).get();
-				let materias = $('.boletim-item-info > span.boletim-item-titulo').map( (i,elemA) => {
-					var notas = [];
-					let boletins = $(`#ctl00_MasterPlaceHolder_ucRepeater_ctl0${i}_ucItemBoletim_divDetalhamentoNotas tbody td.txt-center > span`).map( (i,elemB) => notas.push(elemB.children[0].data));
-					objeto[elemA.children[0].data] = { notas };
-					(objeto[elemA.children[0].data]).faltas = `${suasFaltas[i]} / ${faltasTotais[i]}`;	
-				});
-				resolve(objeto)
-			})
-		}catch(err){
-			reject(err);
-		}
-	});
-}
-
-let getDayAula = (cookieJar) => {
-	return new Promise( (resolve,reject) =>{
-		try{
-			request({
-				headers:{
-					"Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3",
-					"Accept-Language": "en-US,en;q=0.9",
-					"Cache-Control": "max-age=0",
-					"Host": "portal.unifoa.edu.br",
-					"Referer": "https://portal.unifoa.edu.br/PortalSagres/Acesso.aspx",
-					"Sec-Fetch-Mode": "navigate",
-					"Sec-Fetch-Site": "same-origin",
-					"Sec-Fetch-User": "?1",
-					"Upgrade-Insecure-Requests": "1",
-					"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.108 Safari/537.36"
-				},
-				jar:cookieJar,
-				strictSSL: false,
-				uri:'https://portal.unifoa.edu.br/PortalSagres/Modules/Diario/Aluno/Default.aspx',
-			}, (error, response, body) => {
-				if(error) reject(error);
-				let objeto = {};
-				let $ = cheerio.load(body);
-				let aulas = {
-					0: ($('[id*="_ucHorario_grdHorarios"] tbody tr td:nth-child(8)').map( (index,elemento) => elemento.attribs.title ? (elemento.attribs.title).split('<br />')[0] : "" ).get()).filter(a => a),
-					1: ($('[id*="_ucHorario_grdHorarios"] tbody tr td:nth-child(2)').map( (index,elemento) => elemento.attribs.title ? (elemento.attribs.title).split('<br />')[0] : "" ).get()).filter( a => a),
-					2: ($('[id*="_ucHorario_grdHorarios"] tbody tr td:nth-child(3)').map( (index,elemento) => elemento.attribs.title ? (elemento.attribs.title).split('<br />')[0] : "" ).get()).filter(a => a),
-					3: ($('[id*="_ucHorario_grdHorarios"] tbody tr td:nth-child(4)').map( (index,elemento) => elemento.attribs.title ? (elemento.attribs.title).split('<br />')[0] : "" ).get()).filter(a => a),
-					4: ($('[id*="_ucHorario_grdHorarios"] tbody tr td:nth-child(5)').map( (index,elemento) => elemento.attribs.title ? (elemento.attribs.title).split('<br />')[0] : "" ).get()).filter(a => a),
-					5: ($('[id*="_ucHorario_grdHorarios"] tbody tr td:nth-child(6)').map( (index,elemento) => elemento.attribs.title ? (elemento.attribs.title).split('<br />')[0] : "" ).get()).filter(a => a),
-					6: ($('[id*="_ucHorario_grdHorarios"] tbody tr td:nth-child(7)').map( (index,elemento) => elemento.attribs.title ? (elemento.attribs.title).split('<br />')[0] : "" ).get()).filter(a => a)
-				}
-				resolve(aulas)
-			})
+				uri:'http://portal.unifoa.edu.br/Mobile/SagresApi/eu?redirecionar=false',
+			}, (error, response, body) => error || (JSON.parse(body).responseStatus) ? reject(error):resolve(JSON.parse(body)['$link']['href'].split('/')[3]))
 		}catch(err){
 			reject(err);
 		}
@@ -156,96 +23,40 @@ let getDayAula = (cookieJar) => {
 }
 
 
-let getNumberMaterias = (cookieJar) => {
+let getPeriodosLetivos = (cookieJar,b64,userId) => {
 	return new Promise( (resolve,reject) =>{
 		try{
 			request({
 				headers:{
-					"Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3",
+					"Accept": "application/json, text/javascript, */*; q=0.01",
+					"Authorization":`Basic ${b64}`,
 					"Accept-Language": "en-US,en;q=0.9",
-					"Cache-Control": "max-age=0",
-					"Host": "portal.unifoa.edu.br",
-					"Referer": "https://portal.unifoa.edu.br/PortalSagres/Acesso.aspx",
-					"Sec-Fetch-Mode": "navigate",
-					"Sec-Fetch-Site": "same-origin",
-					"Sec-Fetch-User": "?1",
-					"Upgrade-Insecure-Requests": "1",
 					"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.108 Safari/537.36"
 				},
 				jar:cookieJar,
 				strictSSL: false,
-				uri:'https://portal.unifoa.edu.br/PortalSagres/Modules/Diario/Aluno/Default.aspx',
-			}, (error, response, body) => {
-				if(error) reject(error);
-				let objeto = {};
-				let $ = cheerio.load(body);
-				let eventValidation = $('#__EVENTVALIDATION').map( (i,elem) => elem.attribs.value)[0];
-				let vState = $('#__VSTATE').map( (i,elem) => elem.attribs.value)[0];
-				let arrayNumber = $('[id*="_ucInfoTurmaAluno_btAulas"]').map( a => true).get();
-				resolve({eventValidation , vState , arrayNumber })
-			})
+				uri:`http://portal.unifoa.edu.br/Mobile/SagresApi/diario/periodos-letivos?idPessoa=${userId}&perfil=1&campos=itens(id%2Ccodigo%2Cdescricao)&quantidade=0`,
+			}, (error, response, body) => error ? reject(error):resolve(JSON.parse(body)['itens'][0].id))
 		}catch(err){
 			reject(err);
 		}
 	});
 }
 
-let accessMateria = (cookieJar,response,number) => {
-	return new Promise( (resolve,reject) =>{
-		try{
-			request({
-				method:'POST',
-				followAllRedirects: true,
-				headers:{
-					"Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
-					"Accept-Language": "en-US,en;q=0.9",
-					"Cache-Control": "max-age=0",
-					"Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
-					"Host": "portal.unifoa.edu.br",
-					"Referer": "https://portal.unifoa.edu.br/PortalSagres/Modules/Diario/Aluno/Default.aspx",
-					"Sec-Fetch-Mode": "navigate",
-					"Sec-Fetch-Site": "same-origin",
-					"Sec-Fetch-User": "?1",
-					"Upgrade-Insecure-Requests": "1",
-					"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.108 Safari/537.36"
-				},
-				jar:cookieJar,
-				strictSSL: false,
-				uri:'https://portal.unifoa.edu.br/PortalSagres/Modules/Diario/Aluno/Default.aspx',
-				body:`__EVENTTARGET=ctl00$MasterPlaceHolder$ucListaInfoTurmaAluno$Repeater$ctl00$ucInfoTurmaAluno$btAulas&__EVENTARGUMENT=&__LASTFOCUS=&__VSTATE=${response.vState}&__VIEWSTATE=&__EVENTVALIDATION=${response.eventValidation}&ctl00$MasterPlaceHolder$ucListaInfoTurmaAluno$ddPeriodosLetivos$ddPeriodosLetivos=4000003444`
-			}, (error, response, body) => {
-				if(error) reject(error);
-				resolve(true);
-			})
-		}catch(err){
-			reject(err);
-		}
-	});
-}
-
-let consultaAulas = (cookieJar) => {
+let getMaterias = (cookieJar,b64,userId,periodoAtual) => {
 	return new Promise( (resolve,reject) =>{
 		try{
 			request({
 				headers:{
-					"Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3",
+					"Accept": "application/json, text/javascript, */*; q=0.01",
+					"Authorization":`Basic ${b64}`,
 					"Accept-Language": "en-US,en;q=0.9",
-					"Cache-Control": "max-age=0",
-					"Host": "portal.unifoa.edu.br",
-					"Referer": "https://portal.unifoa.edu.br/PortalSagres/Acesso.aspx",
-					"Sec-Fetch-Mode": "navigate",
-					"Sec-Fetch-Site": "same-origin",
-					"Sec-Fetch-User": "?1",
-					"Upgrade-Insecure-Requests": "1",
 					"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.108 Safari/537.36"
 				},
 				jar:cookieJar,
 				strictSSL: false,
-				uri:'https://portal.unifoa.edu.br/PortalSagres/Modules/Diario/Aluno/Classe/ConsultaAulas.aspx',
-			}, (error, response, body) => {
-				if(error) reject(error);
-				//console.log(body);
-			})
+				uri:`http://portal.unifoa.edu.br/Mobile/SagresApi/diario/periodos-letivos/${periodoAtual}?idPessoa=${userId}&perfil=1&quantidade=0&embutir=turmas(itens(resultado%2Cclasses%2CatividadeCurricular%2CultimaAula%2CproximaAula%2Cavaliacoes(itens(avaliacoes(itens(nota))))%2CperiodoLetivo(codigo)))&campos=codigo%2Cturmas(itens(id%2ClimiteFaltas%2Cresultado(-%24link)%2Cclasses(itens(id%2Cdescricao%2Ctipo))%2CatividadeCurricular(nome%2Ccodigo%2CcargaHoraria)%2CultimaAula(data)%2CproximaAula(data)%2Cavaliacoes(itens(nome%2CnomeResumido%2Cnota%2Cavaliacoes(itens(ordinal%2CnomeResumido%2Cdata%2Cpeso%2Cnota(valor)))))%2CperiodoLetivo(codigo)))`,
+			}, (error, response, body) => error ? reject(error):resolve(JSON.parse(body)))
 		}catch(err){
 			reject(err);
 		}
@@ -253,15 +64,51 @@ let consultaAulas = (cookieJar) => {
 }
 
 
-let start = (login,senha) =>{
+let getStatusMateria = (cookieJar,b64,userId,turmaId) => {
+	return new Promise( (resolve,reject) =>{
+		try{
+			request({
+				headers:{
+					"Accept": "application/json, text/javascript, */*; q=0.01",
+					"Authorization":`Basic ${b64}`,
+					"Accept-Language": "en-US,en;q=0.9",
+					"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.108 Safari/537.36"
+				},
+				jar:cookieJar,
+				strictSSL: false,
+				uri:`http://portal.unifoa.edu.br/Mobile/SagresApi/diario/turmas/${turmaId}?idPessoa=${userId}&perfil=1&embutir=classes(itens(aulas(itens(materiaisApoio))%2Cprofessores(itens(pessoa))%2Calocacoes(itens(horario))))%2Cultimaaula%2CatividadeCurricular(departamento)%2Cresultado%2CperiodoLetivo&campos=id%2Cresultado(-%24link)%2ClimiteFaltas%2Cclasses(itens(id%2Cdescricao%2Ctipo%2Cprofessores(itens(pessoa(nome)))%2Calocacoes%2Caulas(proximaPagina%2Citens(planoAula%2Cordinal%2Cdata%2Csituacao%2Cassunto%2CmateriaisApoio%2Ctarefa))))%2CatividadeCurricular(codigo%2Cnome%2CcargaHoraria%2Cdepartamento)%2CultimaAula(data)%2CproximaAula(data)%2CperiodoLetivo(codigo%2Cdescricao%2CinicioAulas%2CfimAulas)`,
+			}, (error, response, body) => error ? reject(error):resolve(JSON.parse(body)))
+		}catch(err){
+			reject(err);
+		}
+	});
+}
+
+let start = (login,senha) => {
 	return new Promise( async (resolve,reject) =>{
 		try{
+			let promises = []
 			let cookieJar = request.jar();
-			let attribs = await getSession(cookieJar);
-			attribs.login = encodeURIComponent(login);
-			attribs.senha = encodeURIComponent(senha);
-			await loginPage(attribs,cookieJar);
-			await resolve( await Promise.all([getDayAula(cookieJar),getBoletim(cookieJar)]))
+			let b64 = await btoa(`${login}:${senha}`);
+			let userId = await loginApi(cookieJar,b64);
+			let periodoAtual = await getPeriodosLetivos(cookieJar,b64,userId);
+			let materias = await getMaterias(cookieJar,b64,userId,periodoAtual)
+			await (materias.turmas.itens).map( turma => promises.push(getStatusMateria(cookieJar,b64,userId,turma.id)));
+			let response = await Promise.all(promises);
+			let responseAll = await response.map(classe =>{
+				let materia = (classe.atividadeCurricular.nome).trim() || "";
+				let codMateria = (classe.atividadeCurricular.codigo).trim() || "";
+				let limiteFaltas = classe.limiteFaltas || "";
+				let suasFaltas = classe.resultado.totalFaltas || "";
+				let nextPage = classe.classes.itens[0].aulas.proximaPagina ? classe.classes.itens[0].aulas.proximaPagina['$link']['href'] : "" ;
+				let materialApoio = classe.classes.itens[0].aulas.itens || "";
+				let diaSemana = classe.classes.itens[0].alocacoes.itens[0] ? classe.classes.itens[0].alocacoes.itens[0].horario.dia : "";
+				let horarioInicio = classe.classes.itens[0].alocacoes.itens[0] ? classe.classes.itens[0].alocacoes.itens[0].horario.inicio : "";
+				let horarioFim = classe.classes.itens[0].alocacoes.itens[0] ? classe.classes.itens[0].alocacoes.itens[0].horario.fim : "";
+				let materaisDeApoio = materialApoio.map(material =>{  return { assunto:material.assunto, data:material.data, apoio:material.materiaisApoio.itens }}).filter( a => (a.apoio).length > 0 );
+				return { materia, codMateria, limiteFaltas, suasFaltas, nextPage, diaSemana, horarioInicio, horarioFim, materaisDeApoio }
+			})
+			resolve(responseAll);
 		}catch(err){
 			await reject(err);
 		}
@@ -269,23 +116,4 @@ let start = (login,senha) =>{
 	})
 }
 
-let syncMaterial = (login,senha) => {
-	return new Promise( async (resolve,reject) =>{
-		try{
-			//console.log('obj');
-			let cookieJar = request.jar();
-			let attribs = await getSession(cookieJar);
-			attribs.login = encodeURIComponent(login);
-			attribs.senha = encodeURIComponent(senha);
-			await loginPage(attribs,cookieJar);
-			let response = await getNumberMaterias(cookieJar)
-			await accessMateria(cookieJar,response,'10');
-			await consultaAulas(cookieJar);
-		}catch(err){
-			await reject(err);
-		}
-		
-	})
-}
-
-module.exports = { start, syncMaterial }
+module.exports = { start }
