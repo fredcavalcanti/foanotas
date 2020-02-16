@@ -96,6 +96,11 @@ let start = (login,senha) => {
 			await (materias.turmas.itens).map( turma => promises.push(getStatusMateria(cookieJar,b64,userId,turma.id)));
 			let response = await Promise.all(promises);
 			let responseAll = await response.map(classe =>{
+				/* Não estão sendo retornados (Aguardando Primera Nota para analisar API) */
+				let media = (classe.resultado.media).trim() || "" ; // (Media Geral => 9.8 ... 5.3 ...)
+				let ResultadoDescricao = (classe.resultado.descricao).trim() || ""; // ( descricao do resultado => Aprovado ; Aprovado com Exame Final ; )
+				let aprovadoBoolean = (classe.resultado.aprovado).trim() || ""; // Aprovado => True / False 
+				/* Não estão sendo retornados (Aguardando Primera Nota para analisar API) */
 				let materia = (classe.atividadeCurricular.nome).trim() || "";
 				let codMateria = (classe.atividadeCurricular.codigo).trim() || "";
 				let limiteFaltas = classe.limiteFaltas || "";

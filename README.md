@@ -1,19 +1,18 @@
 # foanotas
-Preguiça de abrir o site da foa toda hora pra ver as notas, criei isso aqui.<br>
+BackEnd do site hospedado em : Site hospedado em : https://notasfoa.herokuapp.com/<br><br>
+Site desenvolvido Inicialmente com intuito de ver as notas com mais facilidade que no Portal original.<br>
+##Oque essa API Faz?<br>
+Essa API tem o intuito de "Mastigar" as informações que vem do servidor principal, no momento ela faz todas os requests necessários e entrega apenas um JSON tratado para consumo do front-end.<br>
+##Porque não utilizar diretamente a API do Portal Original?<br>
+Com o intuito de não guardar/arquivar qualquer dado do usuário, o back-end foi desenvolvido para quando receber as credenciais do usuário, elas são utilizadas apenas para retornar seus dados diretamente, sendo assim não arquivando nada em seu Browser.
 
-Site hospedado em : https://notasfoa.herokuapp.com/ <br>
-Obs: O site não guarda nenhuma informação, sobre seu acesso.<br>
-
-
-Template By: ColorLib<br>
-
-# CoolAdmin Bootstrap 4.1 Admin Dashboard Template
-**CoolAdmin** is a responsive Bootstrap 4.1 admin template. It provides you with a collection of ready to use code snippets and utilities, custom pages, loads of charts, 4 different dashboard variations, a collection of applications and some useful widgets. Preview of this awesome admin template available here: https://colorlib.com/polygon/cooladmin/index.html
-
-# Preview
-
-### Screenshot
-
-![CoolAdmin admin dashboard template preview](https://colorlib.com/wp/wp-content/uploads/sites/2/Dashboard-v2.jpg)
-
-### Demo Template: [[Here]](https://colorlib.com/polygon/cooladmin/index.html)
+<br><br><br>
+##O que falta?
+<br>
+Colocar as notas para serem exibidas, devido a troca de API recente.
+<br><br>
+##Quando isso vai ser feito ?
+<br>
+Após a primeira liberação de notas dos cursos.
+<br><br>
+Obs: Front-End da aplicação em:
