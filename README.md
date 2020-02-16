@@ -11,4 +11,4 @@ Colocar as notas para serem exibidas, devido a troca de API recente. <br>
 <br>
 Após a primeira liberação de notas dos cursos.
 <br><br>
-Obs: Front-End da aplicação em:
+Obs: Front-End da aplicação em: https://github.com/fredcavalcanti/Foanotas-FrontEnd
