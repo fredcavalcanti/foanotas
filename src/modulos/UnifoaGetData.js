@@ -97,9 +97,9 @@ let start = (login,senha) => {
 			let response = await Promise.all(promises);
 			let responseAll = await response.map(classe =>{
 				/* Não estão sendo retornados (Aguardando Primera Nota para analisar API) */
-				let media = (classe.resultado.media).trim() || "" ; // (Media Geral => 9.8 ... 5.3 ...)
-				let ResultadoDescricao = (classe.resultado.descricao).trim() || ""; // ( descricao do resultado => Aprovado ; Aprovado com Exame Final ; )
-				let aprovadoBoolean = (classe.resultado.aprovado).trim() || ""; // Aprovado => True / False 
+				let media = classe.resultado.media ? classe.resultado.media.trim() : "" ; // (Media Geral => 9.8 ... 5.3 ...)
+				let ResultadoDescricao =  classe.resultado.descricao ? classe.resultado.descricao : ""; // ( descricao do resultado => Aprovado ; Aprovado com Exame Final ; )
+				let aprovadoBoolean = classe.resultado.aprovado ? classe.resultado.aprovado : ""; // Aprovado => True / False 
 				/* Não estão sendo retornados (Aguardando Primera Nota para analisar API) */
 				let materia = (classe.atividadeCurricular.nome).trim() || "";
 				let codMateria = (classe.atividadeCurricular.codigo).trim() || "";
